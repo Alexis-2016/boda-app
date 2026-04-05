@@ -4,17 +4,86 @@ body {
   padding: 20px;
 }
 
-#fotos img {
-  width: 300px;
-  margin: 10px;
-  border-radius: 10px;
+/* tamaño de botones */
+/* Contenedor general */
+.contenedor-subida {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
 }
 
-#fotos {
+/* Título grande */
+.contenedor-subida h1 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+}
+
+/* Fila de botones */
+.fila-botones {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* Botones de la fila */
+.fila-botones button {
+  flex: 1;
+  padding: 18px;
+  font-size: 1.3rem;
+  border-radius: 12px;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.fila-botones button:active {
+  transform: scale(0.96);
+}
+
+/* Botón SUBIR grande */
+.fila-aceptar {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* Botones de la fila */
+.fila-aceptar button {
+  flex: 0;
+  padding: 18px;
+  font-size: 1.3rem;
+  border-radius: 12px;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.fila-aceptar button:active {
+  transform: scale(0.96);
+}
+
+/* Responsive para móviles */
+@media (max-width: 600px) {
+  .contenedor-subida h1 {
+    font-size: 2.4rem;
+  }
+
+  .fila-botones button {
+    font-size: 1.5rem;
+    padding: 22px;
+  }
+
+  .btn-grande {
+    font-size: 1.8rem;
+    padding: 26px;
+  }
 }
 
 .foto-proyector {

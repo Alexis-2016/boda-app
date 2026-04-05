@@ -6,32 +6,22 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Sube tus fotos de la boda</h1>
+    <div class="contenedor-subida">
+      <h1>Sube tus fotos de la boda</h1>
 
-    <button id="btnGaleria">Subir desde galería</button>
-    <!-- Botón para abrir la galería -->
-    <input
-      type="file"
-      id="inputGaleria"
-      accept="image/*"
-      style="display: none"
-    />
-
-    <button id="btnCamara">Hacer foto</button>
-    <!-- Botón para abrir la cámara -->
-    <input
-      type="file"
-      id="inputCamara"
-      accept="image/*"
-      capture="environment"
-      style="display: none"
-    />
+      <div class="fila-botones">
+        <button id="btn-galeria">Subir desde galería</button>
+        <button id="btn-foto">Hacer foto</button>
+      </div>
+    </div>
 
     <!-- Recuadro de información -->
     <div id="infoFoto" style="margin-top: 20px; font-size: 18px"></div>
 
     <!-- Botón SUBIR -->
-    <button id="btnSubir" style="margin-top: 20px">SUBIR</button>
+    <div class="fila-aceptar">
+      <button id="btn-grande">Aceptar</button>
+    </div>
 
     <script type="module" src="app.js"></script>
   </body>
