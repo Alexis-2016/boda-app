@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Acceso</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #f2f2f2;
+      }
+      .box {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        text-align: center;
+      }
+      input {
+        padding: 12px;
+        font-size: 18px;
+        width: 100%;
+        margin-bottom: 15px;
+      }
+      button {
+        padding: 12px 20px;
+        font-size: 18px;
+        width: 100%;
+        background: #ff4d4d;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <h2>Introduce la contraseña</h2>
+      <input type="password" id="pass" />
+      <button onclick="login()">Entrar</button>
+    </div>
+
+    <script>
+      const PASSWORD = "1989Spain"; // ← cambia esto
+
+      function login() {
+        const p = document.getElementById("pass").value;
+        if (p === PASSWORD) {
+          localStorage.setItem("acceso", "ok");
+          window.location.href = "index.html";
+        } else {
+          alert("Contraseña incorrecta");
+        }
+      }
+    </script>
+  </body>
+</html>

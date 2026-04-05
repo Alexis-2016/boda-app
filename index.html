@@ -6,6 +6,13 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Verificar acceso -->
+    <script>
+      if (localStorage.getItem("acceso") !== "ok") {
+        window.location.href = "login.html";
+      }
+    </script>
+
     <div class="contenedor-subida">
       <h1>Sube tus fotos de la boda</h1>
 
