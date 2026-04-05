@@ -120,12 +120,12 @@ async function enviarFoto() {
 // ---------------------------------------------------------
 
 // Abrir galería
-document.getElementById("btnGaleria").onclick = () => {
+document.getElementById("btn-galeria").onclick = () => {
   document.getElementById("inputGaleria").click();
 };
 
 // Abrir cámara
-document.getElementById("btnCamara").onclick = () => {
+document.getElementById("btn-foto").onclick = () => {
   document.getElementById("inputCamara").click();
 };
 
@@ -134,4 +134,4 @@ document.getElementById("inputGaleria").addEventListener("change", mostrarInfo);
 document.getElementById("inputCamara").addEventListener("change", mostrarInfo);
 
 // Botón SUBIR
-document.getElementById("btnSubir").onclick = enviarFoto;
+document.getElementById("btn-grande").onclick = enviarFoto;
