@@ -2,7 +2,9 @@ name = "boda-app"
 main = "worker.js"
 compatibility_date = "2026-04-19"
 
-assets = "./"
+[assets]
+directory = "./"
+binding = "ASSETS"
 
 # Vinculación con tu Base de Datos
 [[d1_databases]]
