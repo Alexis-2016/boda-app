@@ -1,0 +1,19 @@
+name = "boda-app"
+main = "worker.js"
+compatibility_date = "2026-04-19"
+
+assets = "./"
+
+# Vinculación con tu Base de Datos
+[[d1_databases]]
+binding = "DB"
+database_name = "boda-db"
+database_id = "6ce60cf2-3c44-488d-9179-b9ccffe32c05" # ID de panel de Cloudflare D1
+
+# Vinculación las Imágenes
+[[r2_buckets]]
+binding = "BODA_BUCKET"
+bucket_name = "boda-images"
+
+[vars]
+# ADMIN_PASSWORD = "1989"
