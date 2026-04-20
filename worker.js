@@ -48,16 +48,24 @@ export default {
     if (path === "/upload" && request.method === "POST") {
       const formData = await request.formData();
       const file = formData.get("file");
+      const usuario = formData.get("usuario");
+      const mensaje = formData.get("mensaje");
 
       if (!file) {
         return new Response("No file", { status: 400 });
       }
 
       const key = `${Date.now()}-${file.name}`;
-      await env.BODA_BUCKET.put(key, file.stream());
+      await env.BODA_BUCKET.put(key, file.stream(), {
+        httpMetadata: { contentType: file.type },
+      });
 
-      await env.DB.prepare("INSERT INTO fotos (nombre, aprobada) VALUES (?, ?)")
-        .bind(key, 0)
+      await env.DB.prepare(
+        `INSERT INTO fotos_proyector 
+          (r2_key, nombre_usuario, mensaje, tipo_archivo, size_bytes, aprobada)
+        VALUES (?, ?, ?, ?, ?, 0)`,
+      )
+        .bind(key, usuario, mensaje, file.type, file.size)
         .run();
 
       return new Response(JSON.stringify({ ok: true, key }), {
@@ -70,11 +78,21 @@ export default {
     // -----------------------------
     if (path === "/fotos-aprobadas" && request.method === "GET") {
       const result = await env.DB.prepare(
-        "SELECT nombre FROM fotos WHERE aprobada = 1",
+        `SELECT 
+            r2_key,
+            nombre_usuario,
+            mensaje,
+            orientacion
+        FROM fotos
+        WHERE aprobada = 1
+        ORDER BY creado_en DESC`,
       ).all();
 
       return new Response(JSON.stringify(result.results), {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
       });
     }
 
@@ -90,6 +108,7 @@ export default {
       return new Response(object.body, {
         headers: {
           "Content-Type": object.httpMetadata?.contentType || "image/jpeg",
+          "Access-Control-Allow-Origin": "*",
         },
       });
     }
@@ -98,10 +117,24 @@ export default {
     // 7. ADMIN: LISTAR TODAS LAS FOTOS
     // -----------------------------
     if (path === "/admin/fotos" && request.method === "GET") {
-      const result = await env.DB.prepare("SELECT * FROM fotos").all();
+      const result = await env.DB.prepare(
+        `SELECT 
+            r2_key,
+            nombre_usuario,
+            mensaje,
+            tipo_archivo,
+            size_bytes,
+            creado_en
+          FROM fotos_proyector
+          WHERE aprobada = 1
+          ORDER BY creado_en DESC`,
+      ).all();
 
       return new Response(JSON.stringify(result.results), {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
       });
     }
 
@@ -111,15 +144,19 @@ export default {
     if (path.startsWith("/admin/eliminar/") && request.method === "GET") {
       const id = path.split("/").pop();
 
-      const foto = await env.DB.prepare("SELECT nombre FROM fotos WHERE id = ?")
+      const foto = await env.DB.prepare(
+        "SELECT r2_key FROM fotos_proyector WHERE id = ?",
+      )
         .bind(id)
         .first();
 
       if (!foto) return new Response("Not found", { status: 404 });
 
-      await env.BODA_BUCKET.delete(foto.nombre);
+      await env.BODA_BUCKET.delete(foto.r2_key);
 
-      await env.DB.prepare("DELETE FROM fotos WHERE id = ?").bind(id).run();
+      await env.DB.prepare("DELETE FROM fotos_proyector WHERE id = ?")
+        .bind(id)
+        .run();
 
       return new Response("OK");
     }
