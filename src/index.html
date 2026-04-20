@@ -203,12 +203,21 @@
       ></div>
 
       <!-- BOTÓN SUBIR -->
-      <button class="boton-principal" id="btn-grande">Subir y continuar</button>
+      <button class="boton-principal" id="btn-grande" onclick="enviarFoto()">
+        Subir y continuar
+      </button>
 
       <!-- BOTÓN RETROCESO -->
-      <a href="principal.html" class="boton-retroceso"
-        >← Volver a la página principal</a
-      >
+      <button class="boton-retroceso" onclick="volver()">
+        ⮪ Volver a la página principal
+      </button>
+
+      <script>
+        function volver() {
+          window.location.href =
+            "https://misproyectoslocales.wixsite.com/bodadelaurayyaro";
+        }
+      </script>
     </div>
 
     <script type="module" src="app.js"></script>
