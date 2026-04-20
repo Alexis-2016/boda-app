@@ -84,7 +84,6 @@ function mostrarInfo(event) {
 
 function eliminarFoto() {
   document.getElementById("inputGaleria").value = "";
-  document.getElementById("inputCamara").value = "";
   document.getElementById("previewContainer").innerHTML = "";
 }
 
@@ -93,9 +92,8 @@ function eliminarFoto() {
 // ---------------------------------------------------------
 async function enviarFoto() {
   const fileGaleria = document.getElementById("inputGaleria").files[0];
-  const fileCamara = document.getElementById("inputCamara").files[0];
 
-  let file = fileGaleria || fileCamara;
+  let file = fileGaleria;
 
   if (!file) return alert("Primero selecciona o toma una foto");
 
@@ -133,7 +131,6 @@ async function enviarFoto() {
 
   // Limpiar inputs
   document.getElementById("inputGaleria").value = "";
-  document.getElementById("inputCamara").value = "";
   document.getElementById("infoFoto").innerHTML = "";
   document.getElementById("nombre").value = "";
   document.getElementById("mensaje").value = "";
@@ -142,16 +139,6 @@ async function enviarFoto() {
 // ---------------------------------------------------------
 // 4. EVENTOS DE LOS BOTONES E INPUTS
 // ---------------------------------------------------------
-
-// Abrir galería
-document.getElementById("btn-galeria").onclick = () => {
-  document.getElementById("inputGaleria").click();
-};
-
-// Abrir cámara
-document.getElementById("btn-foto").onclick = () => {
-  document.getElementById("inputCamara").click();
-};
 
 // Mostrar info al seleccionar foto
 document.getElementById("inputGaleria").addEventListener("change", mostrarInfo);
