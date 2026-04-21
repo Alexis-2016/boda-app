@@ -46,8 +46,6 @@ export default {
     // 4. SUBIR FOTO (POST /upload)
     // -----------------------------
     if (path === "/upload" && request.method === "POST") {
-      console.log([...formData.keys()]);
-
       const formData = await request.formData();
       const file = formData.get("foto") || formData.get("file"); // Compatibilidad con diferentes nombres de campo
       const usuario = formData.get("usuario");
