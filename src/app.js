@@ -82,26 +82,39 @@ function mostrarInfo(event) {
   reader.readAsDataURL(file);
 }
 
+// ---------------------------------------------------------
+// 2.5 MENSAJE DE ÉXITO
+// ---------------------------------------------------------
+function mostrarMensajeExito() {
+  const msg = document.getElementById("mensaje-exito");
+  msg.style.display = "flex";
+
+  setTimeout(() => {
+    msg.style.display = "none";
+  }, 2500);
+}
+
+// ---------------------------------------------------------
+// 2.6 ELIMINAR FOTO
+// ---------------------------------------------------------
 function eliminarFoto() {
   document.getElementById("inputGaleria").value = "";
   document.getElementById("previewContainer").innerHTML = "";
 }
 
 // ---------------------------------------------------------
-// 3. FUNCIÓN PRINCIPAL PARA SUBIR FOTO (BACKEND NUEVO)
+// 3. FUNCIÓN PRINCIPAL PARA SUBIR FOTO
 // ---------------------------------------------------------
 async function enviarFoto() {
-  const fileGaleria = document.getElementById("inputGaleria").files[0];
-
-  let file = fileGaleria;
+  const file = document.getElementById("inputGaleria").files[0];
 
   if (!file) return alert("Primero selecciona o toma una foto");
 
-  const fileOriginal = file;
+  // Comprimir imagen correctamente
+  const { blob, orientacion } = await comprimirImagen(file);
 
-  // Comprimir imagen
-  let blobComprimido = await comprimirImagen(file);
-  file = new File([blobComprimido], fileOriginal.name, { type: "image/jpeg" });
+  // Crear archivo final comprimido
+  const fileComprimido = new File([blob], "foto.jpg", { type: "image/jpeg" });
 
   // Obtener nombre y mensaje del usuario
   const nombreUsuario = document.getElementById("nombre").value.trim();
@@ -111,9 +124,10 @@ async function enviarFoto() {
   // ENVIAR FOTO A TU BACKEND
   // ------------------------------
   const formData = new FormData();
-  formData.append("foto", file);
+  formData.append("foto", fileComprimido);
   formData.append("usuario", nombreUsuario || "Invitado");
   formData.append("mensaje", mensajeUsuario || "");
+  formData.append("orientacion", orientacion);
 
   const respuesta = await fetch(
     "https://boda-images.alexismerinodev.com/upload",
@@ -127,11 +141,12 @@ async function enviarFoto() {
     return alert("Error al enviar la foto al servidor");
   }
 
-  alert("Foto enviada correctamente 🎉");
+  // Mostrar mensaje elegante
+  mostrarMensajeExito();
 
   // Limpiar inputs
   document.getElementById("inputGaleria").value = "";
-  document.getElementById("infoFoto").innerHTML = "";
+  document.getElementById("previewContainer").innerHTML = "";
   document.getElementById("nombre").value = "";
   document.getElementById("mensaje").value = "";
 }
@@ -139,10 +154,5 @@ async function enviarFoto() {
 // ---------------------------------------------------------
 // 4. EVENTOS DE LOS BOTONES E INPUTS
 // ---------------------------------------------------------
-
-// Mostrar info al seleccionar foto
 document.getElementById("inputGaleria").addEventListener("change", mostrarInfo);
-document.getElementById("inputCamara").addEventListener("change", mostrarInfo);
-
-// Botón SUBIR
 document.getElementById("btn-grande").onclick = enviarFoto;
