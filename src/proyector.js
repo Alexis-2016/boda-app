@@ -22,7 +22,7 @@ function actualizarProyector() {
   // 1. Foto principal
   fotoGrande.innerHTML = `
     <div style="position:relative;">
-      <img src="${foto.url}" class="foto-proyector ${animacion}">
+      <img src="${foto.url}" class="fotos_proyector ${animacion}">
       <div style="
         position:absolute;
         bottom:20px;
@@ -123,7 +123,7 @@ setInterval(cargarFotos, 10000);
 let indice = 0;
 
 setInterval(() => {
-  const fotos = document.querySelectorAll(".foto-proyector");
+  const fotos = document.querySelectorAll(".fotos_proyector");
   if (fotos.length === 0) return;
 
   fotos.forEach((f) => (f.style.display = "none"));
