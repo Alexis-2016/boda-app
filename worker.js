@@ -56,14 +56,17 @@ export default {
       }
 
       const key = `${Date.now()}-${file.name}`;
+
+      // Guardar en R2
       await env.BODA_BUCKET.put(key, file.stream(), {
         httpMetadata: { contentType: file.type },
       });
 
+      // Guardar metadatos en D1
       await env.DB.prepare(
         `INSERT INTO fotos_proyector 
-          (r2_key, nombre_usuario, mensaje, tipo_archivo, size_bytes, aprobada)
-        VALUES (?, ?, ?, ?, ?, 0)`,
+          (r2_key, nombre_usuario, mensaje, tipo_archivo, size_bytes)
+        VALUES (?, ?, ?, ?, ?)`,
       )
         .bind(key, usuario, mensaje, file.type, file.size)
         .run();
@@ -74,18 +77,18 @@ export default {
     }
 
     // -----------------------------
-    // 5. LISTAR FOTOS APROBADAS (GET /fotos-aprobadas)
+    // 5. LISTAR TODAS LAS FOTOS (GET /fotos-aprobadas)
     // -----------------------------
     if (path === "/fotos-aprobadas" && request.method === "GET") {
       const result = await env.DB.prepare(
         `SELECT 
+            id,
             r2_key,
             nombre_usuario,
             mensaje,
             orientacion
-        FROM fotos
-        WHERE aprobada = 1
-        ORDER BY creado_en DESC`,
+         FROM fotos_proyector
+         ORDER BY creado_en DESC`,
       ).all();
 
       return new Response(JSON.stringify(result.results), {
@@ -119,15 +122,15 @@ export default {
     if (path === "/admin/fotos" && request.method === "GET") {
       const result = await env.DB.prepare(
         `SELECT 
+            id,
             r2_key,
             nombre_usuario,
             mensaje,
             tipo_archivo,
             size_bytes,
             creado_en
-          FROM fotos_proyector
-          WHERE aprobada = 1
-          ORDER BY creado_en DESC`,
+         FROM fotos_proyector
+         ORDER BY creado_en DESC`,
       ).all();
 
       return new Response(JSON.stringify(result.results), {
@@ -152,8 +155,10 @@ export default {
 
       if (!foto) return new Response("Not found", { status: 404 });
 
+      // Borrar de R2
       await env.BODA_BUCKET.delete(foto.r2_key);
 
+      // Borrar de D1
       await env.DB.prepare("DELETE FROM fotos_proyector WHERE id = ?")
         .bind(id)
         .run();
