@@ -55,10 +55,11 @@ export default {
         return new Response("No file", { status: 400 });
       }
 
-      const key = `${Date.now()}-${file.name}`;
+      // Convertir File → ArrayBuffer (solución definitiva)
+      const arrayBuffer = await file.arrayBuffer();
 
       // Guardar en R2
-      await env.BODA_BUCKET.put(key, file, {
+      await env.BODA_BUCKET.put(key, arrayBuffer, {
         httpMetadata: { contentType: file.type },
       });
 
