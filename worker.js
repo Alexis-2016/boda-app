@@ -58,7 +58,7 @@ export default {
       const key = `${Date.now()}-${file.name}`;
 
       // Guardar en R2
-      await env.BODA_BUCKET.put(key, file.stream(), {
+      await env.BODA_BUCKET.put(key, file, {
         httpMetadata: { contentType: file.type },
       });
 
