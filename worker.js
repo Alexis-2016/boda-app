@@ -47,7 +47,7 @@ export default {
     // -----------------------------
     if (path === "/upload" && request.method === "POST") {
       const formData = await request.formData();
-      const file = formData.get("file");
+      const file = formData.get("foto");
       const usuario = formData.get("usuario");
       const mensaje = formData.get("mensaje");
 
