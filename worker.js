@@ -47,7 +47,7 @@ export default {
     // -----------------------------
     if (path === "/upload" && request.method === "POST") {
       const formData = await request.formData();
-      const file = formData.get("foto");
+      const file = formData.get("foto") || formData.get("file"); // Compatibilidad con diferentes nombres de campo
       const usuario = formData.get("usuario");
       const mensaje = formData.get("mensaje");
 
