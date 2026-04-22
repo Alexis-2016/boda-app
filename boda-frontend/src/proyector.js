@@ -50,7 +50,7 @@ function actualizarProyector() {
 
   siguientes.forEach((foto, index) => {
     const img = document.createElement("img");
-    img.src = foto.url;
+    img.src = `https://boda-images.alexismerinodev.com/foto/${foto.r2_key}`;
 
     img.onclick = () => {
       const seleccionada = colaFotos.splice(index + 1, 1)[0];
@@ -95,7 +95,7 @@ async function cargarFotos() {
       cont.id = `foto-${foto.id}`;
 
       const img = document.createElement("img");
-      img.src = foto.url;
+      img.src = `https://boda-images.alexismerinodev.com/foto/${foto.r2_key}`;
 
       // Añadir clases SOLO una vez
       img.classList.add(

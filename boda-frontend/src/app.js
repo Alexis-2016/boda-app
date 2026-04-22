@@ -154,5 +154,12 @@ async function enviarFoto() {
 // ---------------------------------------------------------
 // 4. EVENTOS DE LOS BOTONES E INPUTS
 // ---------------------------------------------------------
-document.getElementById("inputGaleria").addEventListener("change", mostrarInfo);
-document.getElementById("btn-grande").onclick = enviarFoto;
+const inputGaleria = document.getElementById("inputGaleria");
+const btnGrande = document.getElementById("btn-grande");
+
+if (inputGaleria) {
+  inputGaleria.addEventListener("change", mostrarInfo);
+}
+if (btnGrande) {
+  btnGrande.onclick = enviarFoto;
+}
