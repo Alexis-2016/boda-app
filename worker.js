@@ -1,190 +1,134 @@
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // -----------------------------
-    // 1. Función para verificar sesión
-    // -----------------------------
+    // ✅ CORS preflight - debe ir PRIMERO
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
     function isAuthenticated(request) {
       const cookie = request.headers.get("Cookie") || "";
       return cookie.includes("session=");
     }
 
-    // -----------------------------
-    // 2. LOGIN ADMIN (POST)
-    // -----------------------------
+    // LOGIN ADMIN
     if (path === "/admin/login" && request.method === "POST") {
       const { password } = await request.json();
-
       if (password === env.ADMIN_PASSWORD) {
         const sessionId = crypto.randomUUID();
-
         return new Response(JSON.stringify({ ok: true }), {
           headers: {
             "Content-Type": "application/json",
             "Set-Cookie": `session=${sessionId}; HttpOnly; Secure; Path=/; Max-Age=86400`,
+            ...corsHeaders,
           },
         });
       }
-
       return new Response(JSON.stringify({ ok: false }), {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // -----------------------------
-    // 3. PROTEGER TODAS LAS RUTAS /admin/*
-    // -----------------------------
+    // PROTEGER RUTAS ADMIN
     if (path.startsWith("/admin") && path !== "/admin/login") {
       if (!isAuthenticated(request)) {
         return new Response("No autorizado", { status: 401 });
       }
     }
 
-    // -----------------------------
-    // 4. SUBIR FOTO (POST /upload)
-    // -----------------------------
+    // ✅ SUBIR FOTO - con key definida y CORS añadido
     if (path === "/upload" && request.method === "POST") {
       const formData = await request.formData();
-      const file = formData.get("foto") || formData.get("file"); // Compatibilidad con diferentes nombres de campo
+      const file = formData.get("foto") || formData.get("file");
       const usuario = formData.get("usuario");
       const mensaje = formData.get("mensaje");
+      const orientacion = formData.get("orientacion");
 
       if (!file) {
-        return new Response("No file", { status: 400 });
+        return new Response("No file", { status: 400, headers: corsHeaders });
       }
 
-      // Convertir File → ArrayBuffer (solución definitiva)
+      // ✅ key definida
+      const key = `${Date.now()}-${crypto.randomUUID()}.jpg`;
+
       const arrayBuffer = await file.arrayBuffer();
 
-      // Guardar en R2
       await env.BODA_BUCKET.put(key, arrayBuffer, {
         httpMetadata: { contentType: file.type },
       });
 
-      // Guardar metadatos en D1
       await env.DB.prepare(
         `INSERT INTO fotos_proyector 
-          (r2_key, nombre_usuario, mensaje, tipo_archivo, size_bytes)
-        VALUES (?, ?, ?, ?, ?)`,
+          (r2_key, nombre_usuario, mensaje, tipo_archivo, size_bytes, orientacion)
+        VALUES (?, ?, ?, ?, ?, ?)`,
       )
-        .bind(key, usuario, mensaje, file.type, file.size)
+        .bind(key, usuario, mensaje, file.type, file.size, orientacion)
         .run();
 
       return new Response(JSON.stringify({ ok: true, key }), {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // -----------------------------
-    // 5. LISTAR TODAS LAS FOTOS (GET /fotos-aprobadas)
-    // -----------------------------
+    // FOTOS APROBADAS
     if (path === "/fotos-aprobadas" && request.method === "GET") {
       const result = await env.DB.prepare(
-        `SELECT 
-            id,
-            r2_key,
-            nombre_usuario,
-            mensaje,
-            orientacion
-         FROM fotos_proyector
-         ORDER BY creado_en DESC`,
+        `SELECT id, r2_key, nombre_usuario, mensaje, orientacion
+         FROM fotos_proyector ORDER BY creado_en DESC`,
       ).all();
-
       return new Response(JSON.stringify(result.results), {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // -----------------------------
-    // 6. SERVIR FOTO (GET /foto/:key)
-    // -----------------------------
+    // SERVIR FOTO
     if (path.startsWith("/foto/") && request.method === "GET") {
       const key = path.replace("/foto/", "");
       const object = await env.BODA_BUCKET.get(key);
-
       if (!object) return new Response("Not found", { status: 404 });
-
       return new Response(object.body, {
         headers: {
           "Content-Type": object.httpMetadata?.contentType || "image/jpeg",
-          "Access-Control-Allow-Origin": "*",
+          ...corsHeaders,
         },
       });
     }
 
-    // -----------------------------
-    // 7. ADMIN: LISTAR TODAS LAS FOTOS
-    // -----------------------------
+    // ADMIN: LISTAR FOTOS
     if (path === "/admin/fotos" && request.method === "GET") {
       const result = await env.DB.prepare(
-        `SELECT 
-            id,
-            r2_key,
-            nombre_usuario,
-            mensaje,
-            tipo_archivo,
-            size_bytes,
-            creado_en
-         FROM fotos_proyector
-         ORDER BY creado_en DESC`,
+        `SELECT id, r2_key, nombre_usuario, mensaje, tipo_archivo, size_bytes, creado_en
+         FROM fotos_proyector ORDER BY creado_en DESC`,
       ).all();
-
       return new Response(JSON.stringify(result.results), {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // -----------------------------
-    // 8. ADMIN: ELIMINAR FOTO
-    // -----------------------------
+    // ADMIN: ELIMINAR FOTO
     if (path.startsWith("/admin/eliminar/") && request.method === "GET") {
       const id = path.split("/").pop();
-
       const foto = await env.DB.prepare(
         "SELECT r2_key FROM fotos_proyector WHERE id = ?",
       )
         .bind(id)
         .first();
-
       if (!foto) return new Response("Not found", { status: 404 });
-
-      // Borrar de R2
       await env.BODA_BUCKET.delete(foto.r2_key);
-
-      // Borrar de D1
       await env.DB.prepare("DELETE FROM fotos_proyector WHERE id = ?")
         .bind(id)
         .run();
-
-      return new Response("OK");
+      return new Response("OK", { headers: corsHeaders });
     }
 
-    // -----------------------------
-    // 9. SI NO COINCIDE NINGUNA RUTA
-    // -----------------------------
     return new Response("Not found", { status: 404 });
   },
 };
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://alexismerinodev.com",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
-
-return new Response("OK", {
-  status: 200,
-  headers: corsHeaders,
-});
-
-if (request.method === "OPTIONS") {
-  return new Response(null, { headers: corsHeaders });
-}
