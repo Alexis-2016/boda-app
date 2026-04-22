@@ -173,3 +173,18 @@ export default {
     return new Response("Not found", { status: 404 });
   },
 };
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://alexismerinodev.com",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+return new Response("OK", {
+  status: 200,
+  headers: corsHeaders,
+});
+
+if (request.method === "OPTIONS") {
+  return new Response(null, { headers: corsHeaders });
+}
