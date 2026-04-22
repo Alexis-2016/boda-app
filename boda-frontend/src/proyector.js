@@ -21,7 +21,7 @@ function actualizarProyector() {
   // 1. Foto principal con nombre y mensaje superpuesto
   fotoGrande.innerHTML = `
     <div style="position:relative;">
-      <img src="https://boda-images.alexismerinodev.com/foto/${foto.r2_key}" class="fotos_proyector ${animacion}">
+      <img src="https://boda-backend.marcelomerino8.workers.dev/foto/${foto.r2_key}" class="fotos_proyector ${animacion}">
       <div style="
         position:absolute;
         bottom:20px;
@@ -47,7 +47,7 @@ function actualizarProyector() {
   miniaturas.innerHTML = "";
   colaFotos.slice(1, 6).forEach((foto, index) => {
     const img = document.createElement("img");
-    img.src = `https://boda-images.alexismerinodev.com/foto/${foto.r2_key}`;
+    img.src = `https://boda-backend.marcelomerino8.workers.dev/foto/${foto.r2_key}`;
 
     // Al hacer clic en una miniatura, pasa a ser la foto principal
     img.onclick = () => {
@@ -81,7 +81,7 @@ function animacionPorOrientacion(orientacion) {
 async function cargarFotos() {
   try {
     const res = await fetch(
-      "https://boda-images.alexismerinodev.com/fotos-aprobadas",
+      "https://boda-backend.marcelomerino8.workers.dev/fotos-aprobadas",
     );
     const fotos = await res.json();
 
