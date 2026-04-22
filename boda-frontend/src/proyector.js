@@ -3,26 +3,25 @@
 // ---------------------------------------------------------
 let colaFotos = [];
 
+// Añade una nueva foto a la cola y actualiza la pantalla
 export function nuevaFotoRecibida(foto) {
   colaFotos.push(foto);
   actualizarProyector();
 }
 
+// Muestra la primera foto de la cola en pantalla grande y el resto como miniaturas
 function actualizarProyector() {
   const fotoGrande = document.getElementById("foto-grande");
   const miniaturas = document.getElementById("miniaturas");
-
   if (colaFotos.length === 0) return;
 
   const foto = colaFotos[0];
-
-  // Seleccionar animación según orientación
   const animacion = animacionPorOrientacion(foto.orientacion);
 
-  // 1. Foto principal
+  // 1. Foto principal con nombre y mensaje superpuesto
   fotoGrande.innerHTML = `
     <div style="position:relative;">
-      <img src="${foto.url}" class="fotos_proyector ${animacion}">
+      <img src="https://boda-images.alexismerinodev.com/foto/${foto.r2_key}" class="fotos_proyector ${animacion}">
       <div style="
         position:absolute;
         bottom:20px;
@@ -35,7 +34,7 @@ function actualizarProyector() {
         font-size:24px;
         font-weight:bold;
       ">
-        ${foto.nombre_usuario || "Invitado"} 
+        ${foto.nombre_usuario || "Invitado"}
         <br>
         <span style="font-size:20px; font-weight:normal;">
           ${foto.mensaje || ""}
@@ -44,14 +43,13 @@ function actualizarProyector() {
     </div>
   `;
 
-  // 2. Miniaturas
+  // 2. Miniaturas de las siguientes fotos (máximo 5)
   miniaturas.innerHTML = "";
-  const siguientes = colaFotos.slice(1, 6);
-
-  siguientes.forEach((foto, index) => {
+  colaFotos.slice(1, 6).forEach((foto, index) => {
     const img = document.createElement("img");
     img.src = `https://boda-images.alexismerinodev.com/foto/${foto.r2_key}`;
 
+    // Al hacer clic en una miniatura, pasa a ser la foto principal
     img.onclick = () => {
       const seleccionada = colaFotos.splice(index + 1, 1)[0];
       colaFotos.unshift(seleccionada);
@@ -63,13 +61,14 @@ function actualizarProyector() {
 }
 
 // ---------------------------------------------------------
-// 1.1 Animaciones según orientación
+// 1.1 Clases y animaciones según orientación de la foto
 // ---------------------------------------------------------
 function clasePorOrientacion(orientacion) {
   if (orientacion === "vertical") return "foto-vertical";
   if (orientacion === "horizontal") return "foto-horizontal";
   return "foto-cuadrada";
 }
+
 function animacionPorOrientacion(orientacion) {
   if (orientacion === "vertical") return "anim-slide-up";
   if (orientacion === "horizontal") return "anim-zoom";
@@ -77,10 +76,8 @@ function animacionPorOrientacion(orientacion) {
 }
 
 // ---------------------------------------------------------
-// 2. CARGAR FOTOS DESDE TU BACKEND
+// 2. CARGAR FOTOS DESDE EL BACKEND
 // ---------------------------------------------------------
-const contenedor = document.getElementById("fotos");
-
 async function cargarFotos() {
   try {
     const res = await fetch(
@@ -88,37 +85,22 @@ async function cargarFotos() {
     );
     const fotos = await res.json();
 
-    contenedor.innerHTML = "";
-
-    fotos.forEach((foto) => {
-      const cont = document.createElement("div");
-      cont.id = `foto-${foto.id}`;
-
-      const img = document.createElement("img");
-      img.src = `https://boda-images.alexismerinodev.com/foto/${foto.r2_key}`;
-
-      // Añadir clases SOLO una vez
-      img.classList.add(
-        "foto-proyector",
-        clasePorOrientacion(foto.orientacion),
-        animacionPorOrientacion(foto.orientacion),
-      );
-
-      cont.appendChild(img);
-      contenedor.appendChild(cont);
-    });
+    // Guardar fotos en la cola y actualizar el proyector
+    colaFotos = fotos;
+    actualizarProyector();
   } catch (err) {
     console.error("Error cargando fotos:", err);
   }
 }
 
+// Cargar fotos al iniciar
 cargarFotos();
 
-// Refrescar cada 10 segundos
+// Refrescar cada 10 segundos para mostrar nuevas fotos
 setInterval(cargarFotos, 10000);
 
 // ---------------------------------------------------------
-// 3. SLIDESHOW AUTOMÁTICO
+// 3. SLIDESHOW AUTOMÁTICO (cambia de foto cada 5 segundos)
 // ---------------------------------------------------------
 let indice = 0;
 
@@ -126,14 +108,16 @@ setInterval(() => {
   const fotos = document.querySelectorAll(".fotos_proyector");
   if (fotos.length === 0) return;
 
+  // Ocultar todas las fotos y mostrar solo la actual
   fotos.forEach((f) => (f.style.display = "none"));
   fotos[indice].style.display = "block";
 
+  // Avanzar al siguiente índice de forma circular
   indice = (indice + 1) % fotos.length;
 }, 5000);
 
 // ---------------------------------------------------------
-// 4. PANTALLA COMPLETA
+// 4. PANTALLA COMPLETA (pulsa F para activar/desactivar)
 // ---------------------------------------------------------
 document.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() === "f") activarPantallaCompleta();
